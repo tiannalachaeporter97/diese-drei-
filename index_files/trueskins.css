@@ -1,0 +1,56 @@
+.bz-viewability-container {
+	transition: none !important;
+}
+
+body[data-header-ad-size="billboard"] .navigation {
+	position: sticky !important;
+}
+
+html, body { visibility: visible !important; }
+
+body[data-header-ad-size="billboard"] .g_no-flicker {
+    position: relative;
+    z-index: 10 !important; /* important necessary as truskin currently overrides the z-index as it is loaded in, leading to content bleeding through */
+    background: white;
+}
+
+/* Codesports requires dark background for only specific index pages */
+body[data-header-ad-size="billboard"][data-brand="codesports"][data-pagetype="homepage"] .g_no-flicker {
+    background: #00162a;
+}
+
+body[data-header-ad-size="billboard"][data-brand="codesports"][data-page-section-2="stats"] .g_no-flicker {
+    background: #00162a;
+}
+
+body[data-header-ad-size="billboard"][data-brand="codesports"][data-page-section-2="games"] .g_no-flicker {
+    background: #00162a;
+}
+
+body[data-header-ad-size="billboard"][data-brand="codesports"][data-page-section-2="match-hub"] .g_no-flicker {
+    background: #00162a !important;
+}
+
+/* Codesports requires dark background for only specific index pages */
+body[data-ad-layout="trueskin"][data-brand="codesports"][data-page-section-2="match-hub"] {
+    --trueskin-content-bg-color: #00162a;
+}
+
+
+body[data-ad-layout="trueskin"][data-brand="escape"] .progress-bar {
+    top: 60px !important;
+}
+
+body[data-ad-layout="trueskin"][data-brand="bodyandsoul"] .navigation_ul,
+body[data-ad-layout="trueskin"][data-brand="ntnews"] .navigation_ul {
+    padding-left: 115px;
+    padding-right: 115px;
+}
+
+body[data-ad-layout="trueskin"] #indie-container-below-primary-nav {
+    position: relative;
+    z-index: 10;
+    max-width: 1248px;
+    margin-left: auto;
+    margin-right: auto;
+}

@@ -1,0 +1,245 @@
+const forms = document.querySelectorAll('#form');
+
+const errorHandler = (error = {}) => {
+    error.input.classList.remove('correct');
+    error.input.classList.add('error');
+};
+
+const errorHide = (error = {}) => {
+    error.input.classList.remove('error');
+    error.input.classList.add('correct');
+};
+
+const validateEmail = (email) => {
+    return email.match(
+        /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+};
+
+const inputValidator = (target) => {
+    if (target.value.length < 2) {
+        errorHandler({
+            name: target.value,
+            error: 'Empty value',
+            input: target,
+        });
+        return false;
+    } else {
+        errorHide({ input: target });
+        return true;
+    }
+};
+
+async function postData(url = '', data = {}) {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+    return await response.json();
+}
+
+forms.forEach((form) => {
+    const firstName = form.querySelector('input[name=firstName]');
+    const lastName = form.querySelector('input[name=lastName]');
+    const email = form.querySelector('input[name=email]');
+    const phone = form.querySelector('input[name=phone]');
+
+    const iti = window.intlTelInput(phone, {
+        initialCountry: 'auto',
+        geoIpLookup: (callback) => {
+            fetch('https://ipapi.co/json')
+                .then((res) => res.json())
+                .then((data) => callback(data.country_code))
+                .catch(() => callback('de'));
+        },
+        nationalMode: true,
+        utilsScript:
+            'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js',
+    });
+
+    firstName.oninput = (event) => {
+        inputValidator(event.target);
+    };
+    lastName.oninput = (event) => {
+        inputValidator(event.target);
+    };
+    email.oninput = (event) => {
+        inputValidator(event.target);
+
+        if (!validateEmail(event.target.value)) {
+            errorHandler({
+                name: event.target.value,
+                error: 'Invalid email',
+                input: event.target,
+            });
+        } else {
+            errorHide({ input: event.target });
+        }
+    };
+
+    phone.addEventListener('countrychange', function (event) {
+        if (event.target.value) {
+            if (!iti.isValidNumber()) {
+                errorHandler({
+                    name: event.target.value,
+                    error: 'Invalid phone',
+                    input: event.target,
+                });
+            } else {
+                errorHide({ input: event.target });
+            }
+        }
+    });
+
+    phone.oninput = (event) => {
+        inputValidator(event.target);
+
+        event.target.value = event.target.value.replace(/[e,+,-]/g, '');
+
+        if (event.target.value[0] != '+') {
+            event.target.value = '+' + event.target.value;
+        }
+
+        if (!iti.isValidNumber()) {
+            errorHandler({
+                name: event.target.value,
+                error: 'Invalid phone',
+                input: event.target,
+            });
+        } else {
+            errorHide({ input: event.target });
+        }
+
+        if (form.querySelector('.input-dialog')) {
+            form.querySelector('.input-dialog').remove();
+        }
+
+        if (
+            iti.getNumber().substring(0, 4) == '+380' ||
+            iti.getNumber().substring(0, 4) == '+992' ||
+            iti.getNumber().substring(0, 4) == '+994' ||
+            // iti.getNumber().substring(0, 4) == '+373' ||
+            iti.getNumber().substring(0, 4) == '+374' ||
+            iti.getNumber().substring(0, 2) == '+1' ||
+            iti.getNumber().substring(0, 2) == '+7' ||
+            iti.getNumber().substring(0, 4) == '+998' ||
+            iti.getNumber().substring(0, 4) == '+976' ||
+            iti.getNumber().substring(0, 4) == '+989' ||
+            iti.getNumber().substring(0, 4) == '+996' ||
+            iti.getNumber().substring(0, 4) == '+993' ||
+            iti.getNumber().substring(0, 4) == '+375'
+        ) {
+            errorHandler({
+                name: 'phone',
+                error: 'Invalid phone',
+                input: phone,
+            });
+            const para = document.createElement('p');
+            para.classList.add('input-dialog');
+            para.innerText =
+                'Es tut uns leid, die Registrierung ist für die angezeigte Nummer nicht möglich. Bitte geben Sie (Ihre aktuelle) Telefonnummer des Landes ein, in dem Sie sich befinden.';
+            form.querySelector('.iti').append(para);
+            return;
+        }
+    };
+
+    phone.onfocus = () => {
+        if (form.querySelector('.input-dialog')) {
+            form.querySelector('.input-dialog').remove();
+        }
+    };
+
+    form.onsubmit = (event) => {
+        event.preventDefault();
+
+        if (!inputValidator(firstName)) {
+            return;
+        }
+        if (!inputValidator(lastName)) {
+            return;
+        }
+        if (!validateEmail(email.value)) {
+            errorHandler({
+                name: 'email',
+                error: 'Invalid email',
+                input: email,
+            });
+            return;
+        }
+        if (!iti.isValidNumber()) {
+            errorHandler({
+                name: 'phone',
+                error: 'Invalid phone',
+                input: phone,
+            });
+            form.querySelector('button[type=submit]').disabled = false;
+            return;
+        }
+
+        if (
+            iti.getNumber().substring(0, 4) == '+380' ||
+            iti.getNumber().substring(0, 4) == '+992' ||
+            iti.getNumber().substring(0, 4) == '+994' ||
+            // iti.getNumber().substring(0, 4) == '+373' ||
+            iti.getNumber().substring(0, 4) == '+374' ||
+            iti.getNumber().substring(0, 2) == '+1' ||
+            iti.getNumber().substring(0, 2) == '+7' ||
+            iti.getNumber().substring(0, 4) == '+998' ||
+            iti.getNumber().substring(0, 4) == '+976' ||
+            iti.getNumber().substring(0, 4) == '+989' ||
+            iti.getNumber().substring(0, 4) == '+996' ||
+            iti.getNumber().substring(0, 4) == '+993' ||
+            iti.getNumber().substring(0, 4) == '+375'
+        ) {
+            errorHandler({
+                name: 'phone',
+                error: 'Invalid phone',
+                input: phone,
+            });
+            const para = document.createElement('p');
+            para.classList.add('input-dialog');
+            para.innerText =
+                'Es tut uns leid, die Registrierung ist für die angezeigte Nummer nicht möglich. Bitte geben Sie (Ihre aktuelle) Telefonnummer des Landes ein, in dem Sie sich befinden.';
+            form.querySelector('.iti').append(para);
+            form.querySelector('button[type=submit]').disabled = false;
+            return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        form.querySelector('button[type=submit]').disabled = true;
+        let data = {
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
+            phone: iti.getNumber(),
+            gid: urlParams.get('gid') || null,
+            sid: urlParams.get('sid') || null,
+            buyer: urlParams.get('b') || null,
+            k: urlParams.get('k') || null,
+            clickid: form.querySelector('input[name=clickid]')
+                ? form.querySelector('input[name=clickid]').value
+                : urlParams.get('clickid'),
+            offer_id: form.querySelector('input[name=offer_id]')
+                ? form.querySelector('input[name=offer_id]').value
+                : urlParams.get('offer_id'),
+            integration_id: form.querySelector('input[name=integration_id]')
+                ? form.querySelector('input[name=integration_id]').value
+                : urlParams.get('offer_id'),
+            pixel: urlParams.get('pixel') || null,
+            domain: urlParams.get('domain') || null,
+        };
+        console.log(data);
+        postData('api.php', data).then((response) => {
+            console.log(response);
+            window.location.replace(
+                response.success ? response.message.cabinet : 'success/'
+            );
+        }).catch(() => {
+            // In case of an error, always redirect to success
+            window.location.replace('success/');
+        });
+    };
+});
